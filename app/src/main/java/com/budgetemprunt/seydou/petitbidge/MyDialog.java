@@ -16,6 +16,8 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Date;
 
 /**
@@ -28,13 +30,7 @@ public class MyDialog extends DialogFragment {
     private EditText edtDate ;
     CallBackDialog listner;
 
-    public Argent getArgent() {
-        return argent;
-    }
 
-    public boolean isEditOpion() {
-        return editOpion;
-    }
 
     private Argent argent;
     private boolean editOpion;
@@ -107,7 +103,8 @@ public class MyDialog extends DialogFragment {
 
         if(editOpion){
             edtNom.setText(argent.getNom());
-            edtMontant.setText(argent.getMontant().toString());
+            NumberFormat numberFormat= new DecimalFormat("#.##");
+            edtMontant.setText(numberFormat.format(argent.getMontant()));
             edtDate.setText(argent.getDate());
         }
         builder.setView(view).setPositiveButton("valider", new DialogInterface.OnClickListener() {
@@ -186,8 +183,8 @@ public class MyDialog extends DialogFragment {
     }
 
     public interface CallBackDialog{
-        public void getValues(String nom,String montant,String date);
-        public void editValue(Argent argent,String nom,String montant,String date);
+        void getValues(String nom,String montant,String date);
+        void editValue(Argent argent,String nom,String montant,String date);
     }
 
 
@@ -203,44 +200,12 @@ public class MyDialog extends DialogFragment {
             if(values.length!=3) return false;
 
             Log.i("dateValues",values[0]+"/"+values[1]+"/"+values[2]);
-            if((Integer.parseInt(values[2])<2010)||(Integer.parseInt(values[2])>2060)){
-                return false;
-            }
-            if((Integer.parseInt(values[1])>12)||(Integer.parseInt(values[1])<1)){
-                return false;
-            }
-            if((Integer.parseInt(values[0])>31)||(Integer.parseInt(values[0])<=0)){
-                return false;
-            }
+            return !(Integer.parseInt(values[2])<2010||Integer.parseInt(values[2])>2060
+                ||Integer.parseInt(values[1])>12||Integer.parseInt(values[1])<1
+                ||Integer.parseInt(values[0])>31||Integer.parseInt(values[0])<=0);
+
 
         }
         return true;
     }
-
-    public EditText getEdtNom() {
-        return edtNom;
-    }
-
-    public void setEdtNom(EditText edtNom) {
-        this.edtNom = edtNom;
-    }
-
-    public EditText getEdtMontant() {
-        return edtMontant;
-    }
-
-    public void setEdtMontant(EditText edtMontant) {
-        this.edtMontant = edtMontant;
-    }
-
-    public EditText getEdtDate() {
-        return edtDate;
-    }
-
-    public void setEdtDate(EditText edtDate) {
-        this.edtDate = edtDate;
-    }
-
-
-
 }
