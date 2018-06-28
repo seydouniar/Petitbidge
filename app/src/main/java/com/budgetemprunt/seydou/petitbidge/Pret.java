@@ -1,5 +1,8 @@
 package com.budgetemprunt.seydou.petitbidge;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -17,6 +20,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -26,7 +30,7 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     ArgentBD argentBD ;
     List argents ;
     View v;
-    boolean editOption = false;
+    MyAdapter adapter;
 
     public Pret() {
         // Required empty public constructor
@@ -38,7 +42,6 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -50,20 +53,17 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         argentBD = new ArgentBD(getActivity());
         argentBD.open();
 
-        argents= argentBD.getArgentAll();
 
         // Inflate the layout for this fragment
-
+        //argents= argentBD.getArgentAll();
 
         listView = (ListView)v.findViewById(R.id.listpret);
 
 
 
-
-
-        MyAdapter adapter = new MyAdapter(getActivity(), argents);
-        listView.setAdapter(adapter);
-
+        //adapter = new MyAdapter(getActivity(), argents);
+        //listView.setAdapter(adapter);
+        (new MyAsyncTask()).execute();
         registerForContextMenu(listView);
         //context menu
 
@@ -71,7 +71,6 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         ajout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                editOption = false;
                 openNewDiallog();
 
             }
@@ -79,11 +78,9 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         return v;
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        argentBD.close();
-    }
+
+
+
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -105,11 +102,11 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         int pos = item.getItemId();
         String [] menuItems = getResources().getStringArray(R.array.menu);
         String menuTitle = menuItems[pos];
-        Argent argent = (Argent) listView.getItemAtPosition(acmi.position);
+        final Argent argent = (Argent) listView.getItemAtPosition(acmi.position);
         switch (menuTitle) {
             case "Editer":
                 // User chose the "Settings" item, show the app settings UI...
-                editOption = true;
+                Log.i("DANSEDITE",argent.toString());
                 EditDiallog(argent);
 
                 return true;
@@ -121,10 +118,24 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
                 return true;
 
             case "Supprimer":
-                argentBD.deleteArgent(argent.getId());
-                argents=argentBD.getArgentAll();
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setMessage("Voulez vous vraiment le supprimé")
+                        .setNegativeButton("Annulez", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        })
+                        .setPositiveButton("Supprimer", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                argentBD.deleteArgent(argent.getId());
+                                (new MyAsyncTask()).execute();
+                            }
+                        });
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
 
-                ((BaseAdapter)listView.getAdapter()).notifyDataSetChanged();
                 return true;
 
             default:
@@ -142,16 +153,14 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     public void getValues(String nom,String montant,String date) {
         Argent argent= new Argent(nom,Double.parseDouble(montant),date);
         argentBD.insertArgent(argent);
-        argents = argentBD.getArgentAll();
-        ((BaseAdapter)listView.getAdapter()).notifyDataSetChanged();
+        (new MyAsyncTask()).execute();
 
     }
 
     @Override
     public void editValue(Argent argent,String nom,String montant,String date) {
         argentBD.updateArgent(argent.getId(),new Argent(nom,Double.parseDouble(montant),date));
-        argents = argentBD.getArgentAll();
-        ((BaseAdapter)listView.getAdapter()).notifyDataSetChanged();
+        (new MyAsyncTask()).execute();
     }
 
     public void openNewDiallog(){
@@ -167,9 +176,26 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         FragmentManager fm = getFragmentManager();
         dialog.setTargetFragment(Pret.this,300);
 
-        dialog.getEdtNom().setText(argent.getNom());
-        dialog.getEdtMontant().setText(argent.getMontant().toString());
-        dialog.getEdtDate().setText(argent.getDate());
         dialog.show(fm,"Prêt");
     }
+
+    private class MyAsyncTask extends AsyncTask<Void,Void,List<Argent>>{
+
+        @Override
+        protected List<Argent> doInBackground(Void... voids) {
+            argents= argentBD.getArgentAll();
+            return argents;
+        }
+
+
+        @Override
+        protected void onPostExecute(List<Argent> results) {
+            adapter = new MyAdapter(getActivity(), results);
+            listView.setAdapter(adapter);
+            listView.setTextFilterEnabled(true);
+            adapter.notifyDataSetChanged();
+            Log.i("Background","backkkkkkkkkkkkkkkgroundddd");
+        }
+    }
+
 }

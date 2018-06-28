@@ -16,14 +16,16 @@ import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
 
+import java.util.Date;
+
 /**
  * TODO: document your custom view class.
  */
 @SuppressLint("ValidFragment")
 public class MyDialog extends DialogFragment {
-    EditText edtNom;
-    EditText edtMontant ;
-    EditText edtDate ;
+    private EditText edtNom;
+    private EditText edtMontant ;
+    private EditText edtDate ;
     CallBackDialog listner;
 
     public Argent getArgent() {
@@ -47,6 +49,7 @@ public class MyDialog extends DialogFragment {
     public MyDialog(Argent argent,boolean editOpion){
         this.argent=argent;
         this.editOpion = editOpion;
+
     }
     @Override
     public void onAttach(Context context) {
@@ -81,6 +84,7 @@ public class MyDialog extends DialogFragment {
                         int jour = datepiker.getDayOfMonth();
                         int mois = datepiker.getMonth() + 1;
                         int annee = datepiker.getYear();
+
                         if (jour < 10 && mois < 10)
                             edtDate.setText("0" + jour + "/0" + mois + "/" + annee);
                         else if (jour < 10)
@@ -100,6 +104,12 @@ public class MyDialog extends DialogFragment {
                 alertDialog.show();
             }
         });
+
+        if(editOpion){
+            edtNom.setText(argent.getNom());
+            edtMontant.setText(argent.getMontant().toString());
+            edtDate.setText(argent.getDate());
+        }
         builder.setView(view).setPositiveButton("valider", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -114,6 +124,7 @@ public class MyDialog extends DialogFragment {
                 String nom = edtNom.getText().toString();
                 String montant = edtMontant.getText().toString();
                 String date = edtDate.getText().toString();
+
 
                 if(TextUtils.isEmpty(nom)){
                     edtNom.setError("Nom est vide!");
