@@ -168,14 +168,13 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         MyDialog dialog = new MyDialog(false);
         FragmentManager fm = getFragmentManager();
         dialog.setTargetFragment(Pret.this,300);
-
         dialog.show(fm,"Prêt");
     }
     public void EditDiallog(Argent argent){
         MyDialog dialog = new MyDialog(argent,true);
         FragmentManager fm = getFragmentManager();
         dialog.setTargetFragment(Pret.this,300);
-
+        dialog.setCancelable(false);
         dialog.show(fm,"Prêt");
     }
 
@@ -194,7 +193,7 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
             listView.setAdapter(adapter);
             listView.setTextFilterEnabled(true);
             adapter.notifyDataSetChanged();
-            Log.i("Background","backkkkkkkkkkkkkkkgroundddd");
+
         }
     }
 

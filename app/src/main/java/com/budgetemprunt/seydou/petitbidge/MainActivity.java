@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,16 +24,18 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity{
+public class MainActivity extends AppCompatActivity implements LoginDialog.SendCall{
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-
+    private TextView profil;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        new LoginDialog().show(getSupportFragmentManager(),"show");
+        LoginDialog dialog = new LoginDialog();
+        dialog.setCancelable(false);
+        dialog.show(getSupportFragmentManager(),"show");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -44,6 +47,7 @@ public class MainActivity extends AppCompatActivity{
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
+        profil = (TextView)findViewById(R.id.profil);
         // Set up the ViewPager with the sections adapter.
 
 
@@ -58,6 +62,11 @@ public class MainActivity extends AppCompatActivity{
         adapter.addFragment(new Compte(),"Compte");
         adapter.addFragment(new Compte(),"A propos");
         viewPager.setAdapter(adapter);
+    }
+
+    @Override
+    public void sendInfo(String login, String pass) {
+        profil.setText(login);
     }
 
 
@@ -90,5 +99,26 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+            super.onCreateOptionsMenu(menu);
+            MenuInflater inflater = getMenuInflater();
+            //R.menu.menu est l'id de notre menu
+            inflater.inflate(R.menu.menu_main, menu);
+            return true;
+        }
+    @Override
+    public boolean onOptionsItemSelected (MenuItem item)
+    {
+        switch(item.getItemId())
+        {
+            case R.id.action_settings:
+
+            case R.id.deconnect:
+
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 }

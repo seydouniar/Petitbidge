@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 
@@ -67,6 +68,8 @@ public class MyDialog extends DialogFragment {
         edtNom = view.findViewById(R.id.name);
         edtMontant=view.findViewById(R.id.montant);
         edtDate= view.findViewById(R.id.date);
+        final Button btnAdd = view.findViewById(R.id.dpadd);
+        final Button btnAnn = view.findViewById(R.id.dpannule);
         edtDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,10 +110,9 @@ public class MyDialog extends DialogFragment {
             edtMontant.setText(numberFormat.format(argent.getMontant()));
             edtDate.setText(argent.getDate());
         }
-        builder.setView(view).setPositiveButton("valider", new DialogInterface.OnClickListener() {
+        btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-
+            public void onClick(View v) {
                 edtNom.setError(null);
                 edtDate.setError(null);
                 edtMontant.setError(null);
@@ -163,20 +165,18 @@ public class MyDialog extends DialogFragment {
                     }else {
                         listner.getValues(nom,montant,date);
                     }
+                    dismiss();
 
                 }
-
             }
-
-
-        })
-                .setNegativeButton("annuler", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
-
+        });
+        btnAnn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismiss();
+            }
+        });
+        builder.setView(view).setTitle("Ajouter/Modifier");
 
 
         return builder.create();

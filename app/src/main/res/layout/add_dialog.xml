@@ -43,6 +43,29 @@
         android:hint="dd/MM/AAAA"/>
     </android.support.design.widget.TextInputLayout>
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:gravity="center">
+            <Button
+                android:id="@+id/dpannule"
+                style="?android:textAppearanceSmall"
+                android:text="Annuler"
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
+            <Button
+                android:id="@+id/dpadd"
+                style="?android:textAppearanceSmall"
+                android:text="Valider"
+                android:padding="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                />
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>
