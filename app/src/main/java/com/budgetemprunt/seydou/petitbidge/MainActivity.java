@@ -1,5 +1,6 @@
 package com.budgetemprunt.seydou.petitbidge;
 
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -28,7 +29,11 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private ViewPagerAdapter adapter;
     private TextView profil;
+    static final String LOGIN = "login";
+    static final String PASS = "pass";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
 
 
     private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new Credit(), "Credit");
         adapter.addFragment(new Pret(), "Prêt");
         adapter.addFragment(new Compte(),"Compte");
@@ -67,6 +72,14 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
     @Override
     public void sendInfo(String login, String pass) {
         profil.setText(login);
+        Bundle args = new Bundle();
+        args.putString(LOGIN,login);
+        args.putString(PASS,pass);
+        for (Fragment f:adapter.getmFragmentList()
+             ) {
+            f.setArguments(args);
+        }
+
     }
 
 
@@ -93,6 +106,10 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
             mFragmentTitleList.add(title);
         }
 
+        public List<Fragment> getmFragmentList() {
+            return mFragmentList;
+        }
+
         @Override
         public CharSequence getPageTitle(int position) {
             return mFragmentTitleList.get(position);
@@ -116,6 +133,11 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
             case R.id.action_settings:
 
             case R.id.deconnect:
+                Intent intent = new Intent(MainActivity.this,MainActivity.class);
+                startActivity(intent);
+                finish();
+
+                return true;
 
         }
         return super.onOptionsItemSelected(item);

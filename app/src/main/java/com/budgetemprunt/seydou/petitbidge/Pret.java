@@ -132,7 +132,7 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
                                 argentBD.deleteArgent(argent.getId());
                                 (new MyAsyncTask()).execute();
                             }
-                        });
+                        }).setCancelable(false);
                 AlertDialog alertDialog = builder.create();
                 alertDialog.show();
 
@@ -168,6 +168,7 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         MyDialog dialog = new MyDialog(false);
         FragmentManager fm = getFragmentManager();
         dialog.setTargetFragment(Pret.this,300);
+        dialog.setCancelable(false);
         dialog.show(fm,"Prêt");
     }
     public void EditDiallog(Argent argent){

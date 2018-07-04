@@ -133,8 +133,8 @@ public class LoginDialog extends DialogFragment {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2 && isAdded()) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2 || isAdded()) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
             Log.i("progress","invalidecd");
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
             mLoginFormView.animate().setDuration(shortAnimTime).alpha(
