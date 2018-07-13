@@ -4,9 +4,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
-
-import com.budgetemprunt.seydou.petitbidge.Argent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,15 +13,28 @@ public class ArgentBD {
     private static final int VERSION_BDD = 1;
     private static final String NOM_BDD = "petitbuget.db";
 
+    //argent table
     private static final String TABLE_ARGENT= "table_argent";
     private static final String COL_ID = "ID";
     private static final int NUM_COL_ID = 0;
+    private static final String COL_ID_USER = "userid";
     private static final String COL_NOM = "nom";
     private static final int NUM_COL_NOM = 1;
     private static final String COL_MONTANT = "montant";
     private static final int NUM_COL_MONTANT = 2;
     private static final String COL_DATE = "date";
     private static final int NUM_COL_DATE = 3;
+
+    //user table
+    private static final String TABLE_USER= "user_table";
+    private static final String COL_USER_ID = "ID";
+    private static final int NUM_COL_USER_ID = 0;
+
+    private static final String USER_MAIL= "mail";
+    private static final int NUM_USER_MAIL = 1;
+    private static final String USER_PASS= "pass";
+    private static final int NUM_USER_PASS = 2;
+
 
     private SQLiteDatabase bdd;
 
@@ -51,6 +61,7 @@ public class ArgentBD {
 
     public long insertArgent(Argent argent){
         ContentValues values = new ContentValues();
+        values.put(COL_ID_USER,0);
         values.put(COL_NOM, argent.getNom());
         values.put(COL_MONTANT,argent.getMontant());
         values.put(COL_DATE,argent.getDate());
@@ -58,6 +69,30 @@ public class ArgentBD {
         return bdd.insert(TABLE_ARGENT,null,values);
     }
 
+    public long insertArgent(Argent argent,int id){
+        ContentValues values = new ContentValues();
+        values.put(COL_ID_USER,id);
+        values.put(COL_NOM, argent.getNom());
+        values.put(COL_MONTANT,argent.getMontant());
+        values.put(COL_DATE,argent.getDate());
+
+        return bdd.insert(TABLE_ARGENT,null,values);
+    }
+
+    //insert user
+    public long insertUser(User user){
+        ContentValues values = new ContentValues();
+
+        values.put(USER_MAIL, user.getMail());
+        values.put(USER_PASS, user.getPass());
+
+        return bdd.insert(TABLE_USER,null,values);
+    }
+
+
+    public long deleteUser(int id){
+        return bdd.delete(TABLE_USER,COL_USER_ID + "=" +id,null);
+    }
     public long updateArgent(int id,Argent argent){
         ContentValues values = new ContentValues();
         values.put(COL_NOM, argent.getNom());
@@ -66,25 +101,50 @@ public class ArgentBD {
         return bdd.update(TABLE_ARGENT,values,COL_ID + " = " +id,null);
     }
 
+
     public long deleteArgent(int id){
         return bdd.delete(TABLE_ARGENT,COL_ID + " = " +id,null);
     }
 
-    public List getArgentWithNom(String nom){
-        Cursor c = bdd.query(TABLE_ARGENT,new String[] {COL_ID,COL_NOM,COL_MONTANT,COL_DATE },COL_NOM + " LIKE \"" +nom+ "\"",null,null,null,null);
+
+    public List getArgentAll(int id){
+        Cursor c = bdd.query(TABLE_ARGENT,new String[] {COL_ID,COL_NOM,COL_MONTANT,COL_DATE },COL_ID_USER+" = ?",
+                new String[]{String.valueOf(id)},null,null,null,null);
         return cursorToListArgent(c);
     }
 
-    public List getArgentAll(){
-        Cursor c = bdd.query(TABLE_ARGENT,new String[] {COL_ID,COL_NOM,COL_MONTANT,COL_DATE },null,null,null,null,null);
-        return cursorToListArgent(c);
+    public List getUsers(){
+        Cursor c = bdd.query(TABLE_USER,new String[]{COL_USER_ID,USER_MAIL,USER_PASS},null,null,null,null,null);
+        return cursotoUsers(c);
     }
+
+
+
+    private  List cursotoUsers(Cursor c){
+        List listusers = new ArrayList<User>();
+        if (c.getCount() <0)
+            return Collections.<User>emptyList();
+        c.moveToFirst();
+        while (!c.isAfterLast()){
+            User user = new User();
+            user.setId(c.getInt(NUM_COL_USER_ID));
+            user.setMail(c.getString(NUM_USER_MAIL));
+            user.setPass(c.getString(NUM_USER_PASS));
+            listusers.add(user);
+
+            c.moveToNext();
+        }
+        return listusers;
+    }
+
+
 
     private List cursorToListArgent(Cursor c) {
         List listArgent = new ArrayList<Argent>();
         if (c.getCount() <0)
             return Collections.<Argent>emptyList();
         c.moveToFirst();
+
         while (!c.isAfterLast()){
             Argent a = new Argent();
             a.setId(c.getInt(NUM_COL_ID));
@@ -92,7 +152,6 @@ public class ArgentBD {
             a.setMontant(c.getDouble(NUM_COL_MONTANT));
             a.setDate(c.getString(NUM_COL_DATE));
             listArgent.add(a);
-            Log.i("Argent",a.toString());
             c.moveToNext();
         }
         c.close();

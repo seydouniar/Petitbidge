@@ -6,7 +6,7 @@ import java.sql.Date;
 public class Argent {
     private int id;
     private String nom;
-    private Double montant;
+    private double montant;
     private String date;
 
     public Argent() {

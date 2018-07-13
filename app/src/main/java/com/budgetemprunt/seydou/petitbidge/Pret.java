@@ -1,47 +1,56 @@
 package com.budgetemprunt.seydou.petitbidge;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.app.LoaderManager;
-import android.util.Log;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+
 import java.util.List;
+
 
 
 public class Pret extends Fragment implements MyDialog.CallBackDialog{
 
     ListView listView;
+    ProgressBar progressLayout;
     ArgentBD argentBD ;
+    TextView textTotale;
     List argents ;
     View v;
     MyAdapter adapter;
+    int user_id;
+    String login;
+
 
     public Pret() {
         // Required empty public constructor
-
-
-
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+
+
+    interface SendindPret{
+        void sendUserinfo(int id, String login);
     }
 
     @Override
@@ -50,24 +59,24 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
 
         //bdd
         v=inflater.inflate(R.layout.fragment_pret, container, false);
+
         argentBD = new ArgentBD(getActivity());
         argentBD.open();
 
+        textTotale =(TextView)v.findViewById(R.id.totale);
 
-        // Inflate the layout for this fragment
-        //argents= argentBD.getArgentAll();
-
+        progressLayout = (ProgressBar) v.findViewById(R.id.layout_progress);
         listView = (ListView)v.findViewById(R.id.listpret);
-
-
-
         //adapter = new MyAdapter(getActivity(), argents);
         //listView.setAdapter(adapter);
-        (new MyAsyncTask()).execute();
+
         registerForContextMenu(listView);
+
         //context menu
 
         Button ajout = (Button)v.findViewById(R.id.nouveau);
+
+
         ajout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -86,8 +95,6 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 
         if (v.getId() == R.id.listpret) {
-            AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) menuInfo;
-
             String [] menuItems = getResources().getStringArray(R.array.menu);
             for (int i=0;i<menuItems.length;i++){
                 menu.add(menu.NONE,i,i,menuItems[i]);
@@ -102,11 +109,10 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         int pos = item.getItemId();
         String [] menuItems = getResources().getStringArray(R.array.menu);
         String menuTitle = menuItems[pos];
-        final Argent argent = (Argent) listView.getItemAtPosition(acmi.position);
+    final Argent argent = (Argent) listView.getItemAtPosition(acmi.position);
         switch (menuTitle) {
             case "Editer":
                 // User chose the "Settings" item, show the app settings UI...
-                Log.i("DANSEDITE",argent.toString());
                 EditDiallog(argent);
 
                 return true;
@@ -147,12 +153,20 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     }
 
 
+    public double totaleArgent(ArrayList<Argent> argentsListe){
+        double totale =0;
+        for (int i = 0;i< argentsListe.size();i++) {
+            totale += argentsListe.get(i).getMontant();
+        }
+        return totale;
+    }
 
 
     @Override
     public void getValues(String nom,String montant,String date) {
         Argent argent= new Argent(nom,Double.parseDouble(montant),date);
-        argentBD.insertArgent(argent);
+        argentBD.insertArgent(argent,user_id);
+
         (new MyAsyncTask()).execute();
 
     }
@@ -178,12 +192,37 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         dialog.setCancelable(false);
         dialog.show(fm,"Prêt");
     }
+    private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            user_id = intent.getExtras().getInt("id");
+            login = intent.getExtras().getString("login");
+
+            if(user_id!=0)
+                (new MyAsyncTask()).execute();
+        }
+    };
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mNotificationReceiver,
+                new IntentFilter("com.budgetemprunt.seydou.petitbidge.SOME_ACTION"));
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mNotificationReceiver);
+    }
 
     private class MyAsyncTask extends AsyncTask<Void,Void,List<Argent>>{
 
         @Override
         protected List<Argent> doInBackground(Void... voids) {
-            argents= argentBD.getArgentAll();
+            argents= argentBD.getArgentAll(user_id);
+
             return argents;
         }
 
@@ -191,7 +230,10 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         @Override
         protected void onPostExecute(List<Argent> results) {
             adapter = new MyAdapter(getActivity(), results);
+            double val = totaleArgent((ArrayList<Argent>) argents);
             listView.setAdapter(adapter);
+            textTotale.setText(val+" €");
+            progressLayout.setProgress((int)val);
             listView.setTextFilterEnabled(true);
             adapter.notifyDataSetChanged();
 

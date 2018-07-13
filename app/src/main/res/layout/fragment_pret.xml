@@ -1,27 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".Pret">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="5dp">
     <!-- TODO: Update blank fragment layout -->
-    <android.support.v7.widget.LinearLayoutCompat
+    <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
+
     <Button
         android:id="@+id/nouveau"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Nouveau"
         />
-    <ListView
-        android:id="@+id/listpret"
 
+
+    <ListView
+
+        android:id="@+id/listpret"
+        android:scrollbars="vertical"
+        android:nestedScrollingEnabled="true"
         android:layout_marginTop="10dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-    </android.support.v7.widget.LinearLayoutCompat>
+        android:layout_height="match_parent"
+        android:divider="@drawable/listshape"
+        />
+    </LinearLayout>
 
-</FrameLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_alignParentBottom="true">
+
+            <ProgressBar
+                android:id="@+id/layout_progress"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:max="500"
+                android:min="0"
+                android:progressBackgroundTint="@color/gradianEtart"
+                android:progressTint="@color/gradianEnd"
+                android:progress="10"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_margin="10dp"
+                android:text="Totale"
+                android:textSize="28sp" />
+
+            <TextView
+                android:id="@+id/totale"
+                android:layout_margin="10dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:textSize="28sp"
+                android:text="0"/>
+
+        </RelativeLayout>
+    </RelativeLayout>
+</RelativeLayout>

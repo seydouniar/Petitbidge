@@ -14,8 +14,11 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+
+import java.util.ArrayList;
 
 public class LoginDialog extends DialogFragment {
 
@@ -23,11 +26,15 @@ public class LoginDialog extends DialogFragment {
     private View mProgressView;
     private View mLoginFormView;
 
-    private EditText Editlogin;
+
+    boolean connected = false;
+
+    private AutoCompleteTextView Editlogin;
     private  EditText Editpass;
     private SendCall listner;
-
-
+    private ArgentBD argentBD;
+    private ArrayList<User> users;
+    int user_id;
 
     private static final String[] DUMMY_CREDENTIALS = new String[]{
             "seydou:hello", "sali:world"
@@ -35,7 +42,7 @@ public class LoginDialog extends DialogFragment {
 
 
     interface SendCall{
-        void sendInfo(String login,String pass);
+        void sendInfo(int id,String login,String pass,boolean connected);
     }
     @Override
     public void onAttach(Context context) {
@@ -49,10 +56,17 @@ public class LoginDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+
+        argentBD = new ArgentBD(getContext());
+        argentBD.open();
+        users = (ArrayList<User>)argentBD.getUsers();
+
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.login_dialog,null,false);
-        Editlogin = (EditText)view.findViewById(R.id.login);
+        Editlogin = (AutoCompleteTextView)view.findViewById(R.id.login);
         Editpass = (EditText)view.findViewById(R.id.motdepasse);
+        Editlogin.setText("ali@a.fr");
+        Editpass.setText("seydou1");
         final Button btnConnect = view.findViewById(R.id.dlconnect);
         final Button btnAnnul = view.findViewById(R.id.dlannule);
         mLoginFormView = view.findViewById(R.id.login_form);
@@ -106,8 +120,6 @@ public class LoginDialog extends DialogFragment {
                     showProgress(true);
                     mAuthTask = new LoginDialog.UserLoginTask(email, password);
                     mAuthTask.execute((Void) null);
-                    listner.sendInfo(email,password);
-
                 }
             }
         });
@@ -133,7 +145,7 @@ public class LoginDialog extends DialogFragment {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2 || isAdded()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2 && isAdded()) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
             Log.i("progress","invalidecd");
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
@@ -179,6 +191,10 @@ public class LoginDialog extends DialogFragment {
 
         private final String mEmail;
         private final String mPassword;
+        int id;
+
+
+
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -195,7 +211,7 @@ public class LoginDialog extends DialogFragment {
             } catch (InterruptedException e) {
                 return false;
             }
-
+/**
             for (String credential : DUMMY_CREDENTIALS) {
                 String[] pieces = credential.split(":");
                 if (pieces[0].equals(mEmail)) {
@@ -203,9 +219,24 @@ public class LoginDialog extends DialogFragment {
                     return pieces[1].equals(mPassword);
                 }
             }
+**/
+
+            if(mEmail.equals("admin@admin.com")){
+                connected = false;
+                return mPassword.equals("admin1");
+            }else{
+                for (User user : users) {
+
+                    if (user.getMail().equals(mEmail)&&user.getPass().equals(mPassword)) {
+                        // Account exists, return true if the password matches.
+                        id=user.getId();
+                        return true;
+                    }
+                }
+            }
 
             // TODO: register the new account here.
-            return true;
+            return false;
         }
 
         @Override
@@ -215,6 +246,9 @@ public class LoginDialog extends DialogFragment {
             if(isAdded()){
 
             if (success) {
+                user_id = id;
+                listner.sendInfo(id,mEmail,mPassword,true);
+
                 dismiss();
             } else {
                 Editpass.setError(getString(R.string.error_incorrect_password));

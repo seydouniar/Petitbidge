@@ -1,46 +1,55 @@
 package com.budgetemprunt.seydou.petitbidge;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LoginDialog.SendCall{
+public class MainActivity extends AppCompatActivity implements LoginDialog.SendCall,SubscribDialog.UserData{
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter adapter;
+    boolean isConnected = false;
+
+    //Fragments
+    private Pret pret;
+    private Compte compte;
+    private Credit credit;
+
     private TextView profil;
     static final String LOGIN = "login";
     static final String PASS = "pass";
+    static final String ID = "id";
+    private  ArgentBD argentBD;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        argentBD = new ArgentBD(getApplicationContext());
+        argentBD.open();
+
         LoginDialog dialog = new LoginDialog();
         dialog.setCancelable(false);
         dialog.show(getSupportFragmentManager(),"show");
+
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -48,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
         viewPager = (ViewPager) findViewById(R.id.container);
 
         setupViewPager(viewPager);
-
+        viewPager.getAdapter().notifyDataSetChanged();
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
@@ -62,24 +71,41 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
 
     private void setupViewPager(ViewPager viewPager) {
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new Credit(), "Credit");
-        adapter.addFragment(new Pret(), "Prêt");
-        adapter.addFragment(new Compte(),"Compte");
-        adapter.addFragment(new Compte(),"A propos");
+        pret = new Pret();
+        credit = new Credit();
+        compte = new Compte();
+
+        adapter.addFragment(compte,"Compte");
+        adapter.addFragment(pret, "Prêt");
+        adapter.addFragment(credit, "Credit");
+       
+
+
         viewPager.setAdapter(adapter);
     }
 
     @Override
-    public void sendInfo(String login, String pass) {
-        profil.setText(login);
-        Bundle args = new Bundle();
-        args.putString(LOGIN,login);
-        args.putString(PASS,pass);
-        for (Fragment f:adapter.getmFragmentList()
-             ) {
-            f.setArguments(args);
-        }
+    public void sendInfo(int id,String login, String pass,boolean connected) {
 
+        if (login.equals("admin@admin.com")&&pass.equals("admin1")){
+            SubscribDialog dialog = new SubscribDialog();
+            dialog.setCancelable(false);
+            dialog.show(getSupportFragmentManager(),"useradd");
+        }
+        isConnected = connected;
+        Intent intent = new Intent("com.budgetemprunt.seydou.petitbidge.SOME_ACTION");
+        intent.putExtra(LOGIN,login);
+        intent.putExtra(ID,id);
+
+        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+
+        profil.setText(login);
+
+    }
+
+    @Override
+    public void sendUserData(String mail, String pass) {
+        argentBD.insertUser(new User(mail,pass));
     }
 
 
@@ -106,9 +132,6 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
             mFragmentTitleList.add(title);
         }
 
-        public List<Fragment> getmFragmentList() {
-            return mFragmentList;
-        }
 
         @Override
         public CharSequence getPageTitle(int position) {
@@ -131,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
         switch(item.getItemId())
         {
             case R.id.action_settings:
-
+                
             case R.id.deconnect:
                 Intent intent = new Intent(MainActivity.this,MainActivity.class);
                 startActivity(intent);
