@@ -91,27 +91,4 @@ public class Compte extends Fragment {
         return view;
     }
 
-    private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int id = intent.getExtras().getInt("id");
-            String login = intent.getExtras().getString("login");
-            textView.setText(login+id);
-
-        }
-    };
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mNotificationReceiver,
-                new IntentFilter("com.budgetemprunt.seydou.petitbidge.SOME_ACTION"));
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mNotificationReceiver);
-    }
-
 }

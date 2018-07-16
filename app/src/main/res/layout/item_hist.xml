@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:id="@+id/vertical"
+        android:orientation="horizontal"
+        android:layout_toRightOf="@+id/img_itmpret"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="10dp" >
+        <TextView
+            android:id="@+id/ith_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nom"
+            android:textSize="12pt"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/ith_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/ith_name"
+            android:text="date" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/ith_montant"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14pt"
+        android:layout_alignParentRight="true"
+        android:layout_margin="5pt"
+        android:textStyle="bold"
+        android:text="montant"
+
+        />
+    <TextView
+        android:id="@+id/ith_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ith_montant"
+        android:layout_alignParentRight="true"
+        android:layout_alignBottom="@+id/ith_montant"
+        android:text="Action"
+        android:layout_marginRight="5pt"/>
+
+</RelativeLayout>

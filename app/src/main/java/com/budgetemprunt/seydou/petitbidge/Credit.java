@@ -8,14 +8,18 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.HashMap;
+
 
 public class Credit extends Fragment {
     TextView tv ;
+    SessionManager session;
 
     public Credit() {
 
@@ -35,29 +39,16 @@ public class Credit extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_credit, container, false);
         tv = (TextView)v.findViewById(R.id.texcredit);
+
+        session =new SessionManager(getActivity());
+        session.checkLogin();
+        HashMap<String,String> user = session.getUserDetails();
+        String login = user.get(SessionManager.KEY_LOGIN);
+        String strId = user.get(SessionManager.KEY_ID);
+        tv.setText(login+strId);
         return v;
     }
-    private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int id = intent.getExtras().getInt("id");
-            String login = intent.getExtras().getString("login");
-            tv.setText(login+id);
 
-        }
-    };
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mNotificationReceiver,
-                new IntentFilter("com.budgetemprunt.seydou.petitbidge.SOME_ACTION"));
-    }
-    @Override
-    public void onPause() {
-        super.onPause();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mNotificationReceiver);
-    }
 
 
 }

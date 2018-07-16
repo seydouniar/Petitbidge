@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +36,12 @@ public class ArgentBD {
     private static final String USER_PASS= "pass";
     private static final int NUM_USER_PASS = 2;
 
+    //historique
+    private static final String TAB_HIST = "historiques";
+    private static final String ID_HIST = "ID";
+    private static final String ID_USER_HIST = "id_user";
+    private static final String ACTION = "action_v";
+
 
     private SQLiteDatabase bdd;
 
@@ -45,6 +52,12 @@ public class ArgentBD {
         maBaseSQLite = new MaBaseSQLite(context, NOM_BDD, null, VERSION_BDD);
     }
 
+    public long insertHist(int id, String action){
+        ContentValues values = new ContentValues();
+        values.put(ID_USER_HIST,id);
+        values.put(ACTION,action);
+        return bdd.insert(TAB_HIST,null,values);
+    }
     public void open(){
         //on ouvre la BDD en écriture
         bdd = maBaseSQLite.getWritableDatabase();
@@ -89,6 +102,17 @@ public class ArgentBD {
         return bdd.insert(TABLE_USER,null,values);
     }
 
+    public List<Historique> getHistoriques(int id){
+        String rows = TABLE_ARGENT+"."+COL_NOM+","
+                + TABLE_ARGENT+"."+COL_MONTANT+","
+                + TABLE_ARGENT+"."+COL_DATE+","
+                +TAB_HIST+"."+ACTION;
+        String req = "select "+rows+" from "+ TABLE_ARGENT+ ","+TAB_HIST+ " where "
+                + TABLE_ARGENT+"."+COL_ID_USER+" = "+id+" and "
+                + TAB_HIST+"."+ID_USER_HIST+" = "+ id;
+        Cursor c = bdd.rawQuery(req,null);
+        return cursorToListHist(c);
+    }
 
     public long deleteUser(int id){
         return bdd.delete(TABLE_USER,COL_USER_ID + "=" +id,null);
@@ -156,5 +180,24 @@ public class ArgentBD {
         }
         c.close();
         return listArgent;
+    }
+    private List<Historique> cursorToListHist(Cursor c){
+        List listHists = new ArrayList<Historique>();
+        if (c.getCount() <0)
+            return Collections.<Historique>emptyList();
+        c.moveToFirst();
+
+        while (!c.isAfterLast()){
+            Historique a = new Historique();
+            a.setNom(c.getString(0));
+            a.setMontant(c.getDouble(1));
+            a.setDate(c.getString(2));
+            a.setAction(c.getString(3));
+            Log.i("histinbd",a.toString());
+            listHists.add(a);
+            c.moveToNext();
+        }
+        c.close();
+        return listHists;
     }
 }

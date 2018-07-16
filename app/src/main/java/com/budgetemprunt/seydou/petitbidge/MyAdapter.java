@@ -3,7 +3,6 @@ package com.budgetemprunt.seydou.petitbidge;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 import android.view.LayoutInflater;
@@ -43,7 +42,7 @@ public class MyAdapter extends ArrayAdapter<Argent> {
         viewHolder.montant.setText(argent.getMontant().toString());
         viewHolder.date.setText(argent.getDate());
 
-        if(argent.getMontant()>100){
+        if(argent.getMontant()>=100){
             viewHolder.progress.setProgress(100);
             viewHolder.progress.setProgressTintList(ColorStateList.valueOf(Color.RED));
 

@@ -23,7 +23,17 @@ public class MaBaseSQLite extends SQLiteOpenHelper {
     private static final String USER_MAIL= "mail";
     private static final String USER_PASS= "pass";
 
+    //historique users
+    private static final String TAB_HIST = "historiques";
+    private static final String ID_HIST = "ID";
+    private static final String ID_USER_HIST = "id_user";
+    private static final String ACTION = "action_v";
 
+    private static final String CREATE_HIST = "create table "
+            + TAB_HIST + " ("
+            + ID_HIST + " integer primary key autoincrement, "
+            + ID_USER_HIST + " integer, "
+            + ACTION + " text not null );";
 
 
 
@@ -53,7 +63,7 @@ public class MaBaseSQLite extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_BDD);
         db.execSQL(CREATE_USERDB);
-
+        db.execSQL(CREATE_HIST);
     }
 
     @Override

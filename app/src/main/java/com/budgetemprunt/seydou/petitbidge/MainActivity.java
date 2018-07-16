@@ -2,12 +2,17 @@ package com.budgetemprunt.seydou.petitbidge;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -16,19 +21,25 @@ import android.view.MenuItem;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LoginDialog.SendCall,SubscribDialog.UserData{
+public class MainActivity extends AppCompatActivity implements LoginDialog.SendCall,SubscribDialog.UserData,
+        NavigationView.OnNavigationItemSelectedListener{
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter adapter;
-    boolean isConnected = false;
+
+
+    LocalBroadcastManager localBroadcastManager;
+    private DrawerLayout mDrawerLayout;
 
     //Fragments
     private Pret pret;
     private Compte compte;
     private Credit credit;
+    private Historiques historiques;
 
     private TextView profil;
     static final String LOGIN = "login";
@@ -36,13 +47,19 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
     static final String ID = "id";
     private  ArgentBD argentBD;
 
+    SessionManager session;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        session= new SessionManager(getApplicationContext());
+
+
         argentBD = new ArgentBD(getApplicationContext());
         argentBD.open();
+        localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         LoginDialog dialog = new LoginDialog();
         dialog.setCancelable(false);
@@ -50,8 +67,15 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
 
 
 
+
+        mDrawerLayout = findViewById(R.id.drawer_view);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         viewPager = (ViewPager) findViewById(R.id.container);
@@ -61,9 +85,9 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
 
-        profil = (TextView)findViewById(R.id.profil);
-        // Set up the ViewPager with the sections adapter.
 
+        // Set up the ViewPager with the sections adapter.
+        setNavigationViewListner();
 
     }
 
@@ -74,10 +98,11 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
         pret = new Pret();
         credit = new Credit();
         compte = new Compte();
-
+        historiques = new Historiques();
         adapter.addFragment(compte,"Compte");
         adapter.addFragment(pret, "Prêt");
         adapter.addFragment(credit, "Credit");
+        adapter.addFragment(historiques,"Historiques");
        
 
 
@@ -92,20 +117,46 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
             dialog.setCancelable(false);
             dialog.show(getSupportFragmentManager(),"useradd");
         }
-        isConnected = connected;
-        Intent intent = new Intent("com.budgetemprunt.seydou.petitbidge.SOME_ACTION");
-        intent.putExtra(LOGIN,login);
-        intent.putExtra(ID,id);
 
-        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+        session.createLoginSession(login,id);
+        session.checkLogin();
+        HashMap<String,String> user = session.getUserDetails();
+        login = user.get(SessionManager.KEY_LOGIN);
+        String strId = user.get(SessionManager.KEY_ID);
 
-        profil.setText(login);
+        profil = (TextView)findViewById(R.id.profil);
+        profil.setText(login+strId);
+
+
 
     }
 
     @Override
     public void sendUserData(String mail, String pass) {
         argentBD.insertUser(new User(mail,pass));
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.action_settings: {
+                //do somthing
+                break;
+            }
+            case R.id.deconnect:{
+                session.logoutUser();break;
+            }
+            case R.id.compte_user:
+                break;
+            case R.id.aide:
+                break;
+            case R.id.apropos:
+                break;
+        }
+        //close navigation drawer
+        mDrawerLayout.closeDrawer(GravityCompat.START);
+        return true;
     }
 
 
@@ -139,31 +190,24 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
 
-            super.onCreateOptionsMenu(menu);
-            MenuInflater inflater = getMenuInflater();
-            //R.menu.menu est l'id de notre menu
-            inflater.inflate(R.menu.menu_main, menu);
-            return true;
-        }
     @Override
     public boolean onOptionsItemSelected (MenuItem item)
     {
         switch(item.getItemId())
         {
-            case R.id.action_settings:
-                
-            case R.id.deconnect:
-                Intent intent = new Intent(MainActivity.this,MainActivity.class);
-                startActivity(intent);
-                finish();
-
+            case android.R.id.home:
+                mDrawerLayout.openDrawer(GravityCompat.START);
                 return true;
 
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private void setNavigationViewListner() {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+    }
+
 
 }

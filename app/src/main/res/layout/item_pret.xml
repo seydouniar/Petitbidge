@@ -23,7 +23,7 @@
         android:layout_height="50dp"
         android:layout_centerVertical="true"
         android:layout_marginLeft="10dp"
-        android:background="@drawable/ic_menu_user"/>
+        android:background="@drawable/ic_compte"/>
     <RelativeLayout
         android:id="@+id/vertical"
         android:orientation="horizontal"

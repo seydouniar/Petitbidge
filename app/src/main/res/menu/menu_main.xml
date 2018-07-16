@@ -1,29 +1,39 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.budgetemprunt.seydou.petitbidge.MainActivity">
+    >
 
-        <item
-            android:id="@+id/action_notification1"
-            android:title=""
-            android:icon="@drawable/icon_user_menu48"
-            app:showAsAction="always">
-            <menu>
-                <item
-                    android:id="@+id/action_settings"
-                    android:orderInCategory="100"
-                    android:title="@string/action_settings"
-                    android:icon="@drawable/ic_setting"
-                    app:showAsAction="always|withText" />
-                <item
-                    android:id="@+id/deconnect"
-                    android:title="Deconnexion"
-                    android:orderInCategory="100"
-                    app:showAsAction="always"
-                    android:icon="@drawable/ic_logout"
-                    />
-            </menu>
-        </item>
+
+    <item
+        android:id="@+id/compte_user"
+        android:title="Compte"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_compte"
+        >
+    </item>
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        android:icon="@drawable/ic_setting"
+         />
+
+    <item
+        android:id="@+id/apropos"
+        android:title="A propos"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_info"
+        />
+    <item
+        android:id="@+id/aide"
+        android:title="Aide"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_help"
+        />
+    <item
+        android:id="@+id/deconnect"
+        android:title="Deconnexion"
+        android:orderInCategory="100"
+        android:icon="@drawable/ic_logout"
+        />
 
 </menu>

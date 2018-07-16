@@ -41,6 +41,7 @@ public class LoginDialog extends DialogFragment {
     };
 
 
+
     interface SendCall{
         void sendInfo(int id,String login,String pass,boolean connected);
     }
@@ -248,7 +249,6 @@ public class LoginDialog extends DialogFragment {
             if (success) {
                 user_id = id;
                 listner.sendInfo(id,mEmail,mPassword,true);
-
                 dismiss();
             } else {
                 Editpass.setError(getString(R.string.error_incorrect_password));

@@ -26,6 +26,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -41,6 +42,8 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     MyAdapter adapter;
     int user_id;
     String login;
+    SessionManager session;
+    Context _context;
 
 
     public Pret() {
@@ -48,18 +51,28 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     }
 
 
-
-    interface SendindPret{
-        void sendUserinfo(int id, String login);
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        _context = getActivity();
     }
 
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
+
         //bdd
         v=inflater.inflate(R.layout.fragment_pret, container, false);
 
+
+        session =new SessionManager(getActivity());
+        session.checkLogin();
+        HashMap<String,String> user = session.getUserDetails();
+        String login = user.get(SessionManager.KEY_LOGIN);
+        String strId = user.get(SessionManager.KEY_ID);
+
+        user_id = Integer.parseInt(strId);
         argentBD = new ArgentBD(getActivity());
         argentBD.open();
 
@@ -76,6 +89,8 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
 
         Button ajout = (Button)v.findViewById(R.id.nouveau);
 
+        if(user_id!=0)
+            (new MyAsyncTask()).execute();
 
         ajout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -166,7 +181,7 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     public void getValues(String nom,String montant,String date) {
         Argent argent= new Argent(nom,Double.parseDouble(montant),date);
         argentBD.insertArgent(argent,user_id);
-
+        argentBD.insertHist(user_id,"pret");
         (new MyAsyncTask()).execute();
 
     }
@@ -174,6 +189,7 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     @Override
     public void editValue(Argent argent,String nom,String montant,String date) {
         argentBD.updateArgent(argent.getId(),new Argent(nom,Double.parseDouble(montant),date));
+        argentBD.insertHist(user_id,"Edit prêt");
         (new MyAsyncTask()).execute();
     }
 
@@ -192,37 +208,13 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         dialog.setCancelable(false);
         dialog.show(fm,"Prêt");
     }
-    private BroadcastReceiver mNotificationReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            user_id = intent.getExtras().getInt("id");
-            login = intent.getExtras().getString("login");
 
-            if(user_id!=0)
-                (new MyAsyncTask()).execute();
-        }
-    };
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mNotificationReceiver,
-                new IntentFilter("com.budgetemprunt.seydou.petitbidge.SOME_ACTION"));
-
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mNotificationReceiver);
-    }
 
     private class MyAsyncTask extends AsyncTask<Void,Void,List<Argent>>{
 
         @Override
         protected List<Argent> doInBackground(Void... voids) {
             argents= argentBD.getArgentAll(user_id);
-
             return argents;
         }
 
