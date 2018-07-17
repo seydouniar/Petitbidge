@@ -15,21 +15,25 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LoginDialog.SendCall,SubscribDialog.UserData,
+public class MainActivity extends AppCompatActivity implements SubscribDialog.UserData,
         NavigationView.OnNavigationItemSelectedListener{
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter adapter;
+    String login;
+    String strId;
 
 
     LocalBroadcastManager localBroadcastManager;
@@ -55,18 +59,16 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
         setContentView(R.layout.activity_main);
 
         session= new SessionManager(getApplicationContext());
+        session.checkLogin();
+        HashMap<String,String> user = session.getUserDetails();
+        login = user.get(SessionManager.KEY_LOGIN);
+        strId = user.get(SessionManager.KEY_ID);
+
 
 
         argentBD = new ArgentBD(getApplicationContext());
         argentBD.open();
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
-
-        LoginDialog dialog = new LoginDialog();
-        dialog.setCancelable(false);
-        dialog.show(getSupportFragmentManager(),"show");
-
-
-
 
         mDrawerLayout = findViewById(R.id.drawer_view);
 
@@ -109,27 +111,6 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
         viewPager.setAdapter(adapter);
     }
 
-    @Override
-    public void sendInfo(int id,String login, String pass,boolean connected) {
-
-        if (login.equals("admin@admin.com")&&pass.equals("admin1")){
-            SubscribDialog dialog = new SubscribDialog();
-            dialog.setCancelable(false);
-            dialog.show(getSupportFragmentManager(),"useradd");
-        }
-
-        session.createLoginSession(login,id);
-        session.checkLogin();
-        HashMap<String,String> user = session.getUserDetails();
-        login = user.get(SessionManager.KEY_LOGIN);
-        String strId = user.get(SessionManager.KEY_ID);
-
-        profil = (TextView)findViewById(R.id.profil);
-        profil.setText(login+strId);
-
-
-
-    }
 
     @Override
     public void sendUserData(String mail, String pass) {
@@ -145,7 +126,9 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
                 break;
             }
             case R.id.deconnect:{
-                session.logoutUser();break;
+                Intent intent = new Intent(getApplicationContext(),LoginDialog.class);
+                startActivity(intent);
+                finish();break;
             }
             case R.id.compte_user:
                 break;
@@ -206,6 +189,9 @@ public class MainActivity extends AppCompatActivity implements LoginDialog.SendC
 
     private void setNavigationViewListner() {
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        View header = navigationView.getHeaderView(0);
+        profil = (TextView)header.findViewById(R.id.profil);
+        profil.setText(login+strId);
         navigationView.setNavigationItemSelectedListener(this);
     }
 

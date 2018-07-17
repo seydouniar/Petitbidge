@@ -3,9 +3,11 @@ package com.budgetemprunt.seydou.petitbidge;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,68 +19,54 @@ import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import java.util.ArrayList;
 
-public class LoginDialog extends DialogFragment {
+public class LoginDialog extends Activity {
 
     private UserLoginTask mAuthTask = null;
     private View mProgressView;
     private View mLoginFormView;
 
+    SessionManager session;
 
     boolean connected = false;
 
     private AutoCompleteTextView Editlogin;
     private  EditText Editpass;
-    private SendCall listner;
     private ArgentBD argentBD;
     private ArrayList<User> users;
-    int user_id;
-
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "seydou:hello", "sali:world"
-    };
 
 
-
-    interface SendCall{
-        void sendInfo(int id,String login,String pass,boolean connected);
-    }
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        try {
-            listner = (SendCall) context;
-        }catch (ClassCastException e){
-            throw new ClassCastException(context.toString()+ " doit implementé SendCall");
-        }
-    }
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
 
-        argentBD = new ArgentBD(getContext());
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.login_dialog);
+        argentBD = new ArgentBD(getApplicationContext());
         argentBD.open();
-        users = (ArrayList<User>)argentBD.getUsers();
+        users = (ArrayList<User>) argentBD.getUsers();
 
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.login_dialog,null,false);
-        Editlogin = (AutoCompleteTextView)view.findViewById(R.id.login);
-        Editpass = (EditText)view.findViewById(R.id.motdepasse);
+        session = new SessionManager(getApplicationContext());
+
+        Editlogin = (AutoCompleteTextView) findViewById(R.id.login);
+        Editpass = (EditText)findViewById(R.id.motdepasse);
         Editlogin.setText("ali@a.fr");
         Editpass.setText("seydou1");
-        final Button btnConnect = view.findViewById(R.id.dlconnect);
-        final Button btnAnnul = view.findViewById(R.id.dlannule);
-        mLoginFormView = view.findViewById(R.id.login_form);
-        mProgressView = view.findViewById(R.id.progress1);
+        final Button btnConnect = (Button) findViewById(R.id.dlconnect);
+        final Button btnAnnul = (Button) findViewById(R.id.dlannule);
+        mLoginFormView =  findViewById(R.id.login_form);
+        mProgressView = findViewById(R.id.progress1);
 
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mAuthTask != null) {
                     return;
-                };
+                }
+                ;
 
                 Editlogin.setError(null);
                 Editpass.setError(null);
@@ -94,7 +82,7 @@ public class LoginDialog extends DialogFragment {
                 if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
                     Editpass.setError(getString(R.string.error_invalid_password));
                     focusView = Editpass;
-                    Log.i("passError","invalidecd");
+                    Log.i("passError", "invalidecd");
                     cancel = true;
                 }
 
@@ -102,12 +90,12 @@ public class LoginDialog extends DialogFragment {
                 if (TextUtils.isEmpty(email)) {
                     Editlogin.setError(getString(R.string.error_field_required));
                     focusView = Editlogin;
-                    Log.i("LoginError","vide");
+                    Log.i("LoginError", "vide");
                     cancel = true;
                 } else if (!isEmailValid(email)) {
                     Editlogin.setError(getString(R.string.error_invalid_email));
                     focusView = Editlogin;
-                    Log.i("LoginError","invalidecd");
+                    Log.i("LoginError", "invalidecd");
                     cancel = true;
                 }
 
@@ -119,7 +107,7 @@ public class LoginDialog extends DialogFragment {
                     // Show a progress spinner, and kick off a background task to
                     // perform the user login attempt.
                     showProgress(true);
-                    mAuthTask = new LoginDialog.UserLoginTask(email, password);
+                    mAuthTask = new UserLoginTask(email, password);
                     mAuthTask.execute((Void) null);
                 }
             }
@@ -128,14 +116,12 @@ public class LoginDialog extends DialogFragment {
         btnAnnul.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().finish();
+                finish();
             }
         });
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Connexion")
-                .setView(view);
 
-        return builder.create();
+
+
     }
 
 
@@ -146,7 +132,7 @@ public class LoginDialog extends DialogFragment {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
         // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2 && isAdded()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2 ) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
             Log.i("progress","invalidecd");
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
@@ -244,16 +230,16 @@ public class LoginDialog extends DialogFragment {
         protected void onPostExecute(final Boolean success) {
             mAuthTask = null;
             showProgress(false);
-            if(isAdded()){
 
             if (success) {
-                user_id = id;
-                listner.sendInfo(id,mEmail,mPassword,true);
-                dismiss();
+                session.createLoginSession(mEmail,id);
+                Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                startActivity(i);
+                finish();
             } else {
                 Editpass.setError(getString(R.string.error_incorrect_password));
                 Editpass.requestFocus();
-            }}
+            }
         }
 
         @Override

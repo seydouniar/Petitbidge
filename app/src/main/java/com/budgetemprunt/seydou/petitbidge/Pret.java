@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -60,18 +61,18 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     @Override
     public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        session =new SessionManager(getActivity());
+        session.checkLogin();
 
         //bdd
         v=inflater.inflate(R.layout.fragment_pret, container, false);
 
 
-        session =new SessionManager(getActivity());
-        session.checkLogin();
+
         HashMap<String,String> user = session.getUserDetails();
-        String login = user.get(SessionManager.KEY_LOGIN);
         String strId = user.get(SessionManager.KEY_ID);
 
+        Log.i("idstr",strId);
         user_id = Integer.parseInt(strId);
         argentBD = new ArgentBD(getActivity());
         argentBD.open();
@@ -103,8 +104,11 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     }
 
 
-
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        new MyAsyncTask().execute();
+    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
