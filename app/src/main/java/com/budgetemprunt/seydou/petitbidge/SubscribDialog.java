@@ -3,56 +3,39 @@ package com.budgetemprunt.seydou.petitbidge;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Intent;
-import android.support.v4.app.DialogFragment;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SubscribDialog extends DialogFragment{
+public class SubscribDialog extends Fragment {
     private View mProgressView;
     private View mLoginFormView;
 
+    private ArgentBD argentBD;
 
     private UserLoginTask mAuthTask = null;
-
+    SessionManager session;
     private EditText Editlogin;
     private  EditText Editpass;
     private  EditText Editpass2;
-    private UserData listner;
 
-    interface UserData{
-        void sendUserData(String mail,String pass);
-    }
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        try {
-            listner = (UserData) context;
-        }catch (ClassCastException e){
-            throw new ClassCastException(context.toString()+ " doit implementé SendCall");
-        }
-    }
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        super.onCreateDialog(savedInstanceState);
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-        LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.subscrib,null,false);
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.subscrib,container,false);
+        session = new SessionManager(getActivity());
         Editlogin = (EditText)view.findViewById(R.id.mail);
         Editpass = (EditText)view.findViewById(R.id.motdepasse1);
         Editpass2 = (EditText)view.findViewById(R.id.motdepasse2);
@@ -61,24 +44,30 @@ public class SubscribDialog extends DialogFragment{
         mLoginFormView = view.findViewById(R.id.login_form2);
         mProgressView = view.findViewById(R.id.progress2);
 
+        argentBD= new ArgentBD(getActivity());
+        argentBD.open();
         btnIns.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 inscrire();
             }
         });
-
         btnAnnul.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 getActivity().finish();
             }
         });
-        builder.setTitle("Inscription");
-        builder.setView(view);
-        return builder.create();
+        return view;
+
     }
 
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        argentBD.close();
+    }
 
     private void inscrire(){
         if (mAuthTask != null) {
@@ -133,7 +122,7 @@ public class SubscribDialog extends DialogFragment{
             showProgress(true);
             mAuthTask = new SubscribDialog.UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
-            listner.sendUserData(email,password);
+            argentBD.insertUser(new User(email,password));
             Intent intent = new Intent(getActivity().getApplicationContext(),MainActivity.class);
             startActivity(intent);
             getActivity().finish();
@@ -210,7 +199,7 @@ public class SubscribDialog extends DialogFragment{
 
             try {
                 // Simulate network access.
-                Thread.sleep(2000);
+                Thread.sleep(4000);
             } catch (InterruptedException e) {
                 return false;
             }
@@ -238,7 +227,10 @@ public class SubscribDialog extends DialogFragment{
             if(isAdded()){
 
                 if (success) {
-                    dismiss();
+                    Intent i = new Intent(getActivity(),MainLogin.class);
+                    startActivity(i);
+                    Toast.makeText(getActivity(),"Succefull",Toast.LENGTH_SHORT).show();
+                    getActivity().finish();
                 } else {
                     Editpass.setError(getString(R.string.error_incorrect_password));
                     Editpass.requestFocus();

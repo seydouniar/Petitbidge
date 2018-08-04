@@ -39,6 +39,7 @@ public class ArgentBD {
     //historique
     private static final String TAB_HIST = "historiques";
     private static final String ID_HIST = "ID";
+    private static final String ID_ARG = "id_argent";
     private static final String ID_USER_HIST = "id_user";
     private static final String ACTION = "action_v";
 
@@ -52,9 +53,10 @@ public class ArgentBD {
         maBaseSQLite = new MaBaseSQLite(context, NOM_BDD, null, VERSION_BDD);
     }
 
-    public long insertHist(int id, String action){
+    public long insertHist(int id,int id_arg, String action){
         ContentValues values = new ContentValues();
         values.put(ID_USER_HIST,id);
+        values.put(ID_ARG,id_arg);
         values.put(ACTION,action);
         return bdd.insert(TAB_HIST,null,values);
     }
@@ -107,9 +109,11 @@ public class ArgentBD {
                 + TABLE_ARGENT+"."+COL_MONTANT+","
                 + TABLE_ARGENT+"."+COL_DATE+","
                 +TAB_HIST+"."+ACTION;
-        String req = "select "+rows+" from "+ TABLE_ARGENT+ ","+TAB_HIST+ " where "
-                + TABLE_ARGENT+"."+COL_ID_USER+" = "+id+" and "
-                + TAB_HIST+"."+ID_USER_HIST+" = "+ id;
+        String req = "select "+rows+" from "+ TABLE_ARGENT+ " inner join "+TAB_HIST+ " on "
+                + TABLE_ARGENT+"."+COL_ID_USER+" = "
+                +TAB_HIST+"."+ID_USER_HIST+" where "
+                + TAB_HIST+"."+ID_USER_HIST+" = "+ id
+               ;
         Cursor c = bdd.rawQuery(req,null);
         return cursorToListHist(c);
     }
@@ -155,7 +159,7 @@ public class ArgentBD {
             user.setMail(c.getString(NUM_USER_MAIL));
             user.setPass(c.getString(NUM_USER_PASS));
             listusers.add(user);
-
+            Log.i("Uesrs",user.toString());
             c.moveToNext();
         }
         return listusers;
@@ -199,5 +203,16 @@ public class ArgentBD {
         }
         c.close();
         return listHists;
+    }
+
+    public int getLastIdArgent(){
+        int id = 0;
+        String selected = "select * from "+ TABLE_ARGENT
+                + " order by " + COL_ID+ " desc limit 1";
+        Cursor c = bdd.rawQuery(selected,null);
+        if(c!=null&&c.moveToFirst())
+         id =c.getInt(NUM_COL_ID);
+        Log.i("argentId","id= "+id);
+        return id;
     }
 }

@@ -53,7 +53,7 @@ public class Historiques extends Fragment {
         session =new SessionManager(getActivity());
         session.checkLogin();
         HashMap<String,String> user = session.getUserDetails();
-        String login = user.get(SessionManager.KEY_LOGIN);
+
         String strId = user.get(SessionManager.KEY_ID);
 
         user_id = Integer.parseInt(strId);

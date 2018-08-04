@@ -185,7 +185,8 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     public void getValues(String nom,String montant,String date) {
         Argent argent= new Argent(nom,Double.parseDouble(montant),date);
         argentBD.insertArgent(argent,user_id);
-        argentBD.insertHist(user_id,"pret");
+        int id_arg = argentBD.getLastIdArgent();
+        argentBD.insertHist(user_id,id_arg,"pret");
         (new MyAsyncTask()).execute();
 
     }
@@ -193,7 +194,7 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     @Override
     public void editValue(Argent argent,String nom,String montant,String date) {
         argentBD.updateArgent(argent.getId(),new Argent(nom,Double.parseDouble(montant),date));
-        argentBD.insertHist(user_id,"Edit prêt");
+        argentBD.insertHist(user_id,argent.getId(),"Edit prêt");
         (new MyAsyncTask()).execute();
     }
 

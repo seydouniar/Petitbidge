@@ -23,5 +23,6 @@
         completions."
     </string>
     <string name="error_idem_password">Mot de passe différent</string>
+    <string name="title_activity_main_login">Connexion/Inscription</string>
 
 </resources>

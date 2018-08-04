@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements SubscribDialog.UserData,
+public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener{
     private Toolbar toolbar;
     private TabLayout tabLayout;
@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements SubscribDialog.Us
 
         argentBD = new ArgentBD(getApplicationContext());
         argentBD.open();
-        localBroadcastManager = LocalBroadcastManager.getInstance(this);
 
         mDrawerLayout = findViewById(R.id.drawer_view);
 
@@ -112,10 +111,7 @@ public class MainActivity extends AppCompatActivity implements SubscribDialog.Us
     }
 
 
-    @Override
-    public void sendUserData(String mail, String pass) {
-        argentBD.insertUser(new User(mail,pass));
-    }
+
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -126,8 +122,7 @@ public class MainActivity extends AppCompatActivity implements SubscribDialog.Us
                 break;
             }
             case R.id.deconnect:{
-                Intent intent = new Intent(getApplicationContext(),LoginDialog.class);
-                startActivity(intent);
+                session.logoutUser();
                 finish();break;
             }
             case R.id.compte_user:
@@ -196,4 +191,9 @@ public class MainActivity extends AppCompatActivity implements SubscribDialog.Us
     }
 
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        session.destroy();
+    }
 }

@@ -4,30 +4,29 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 
 import java.util.ArrayList;
 
-public class LoginDialog extends Activity {
+public class LoginDialog extends Fragment {
 
     private UserLoginTask mAuthTask = null;
     private View mProgressView;
     private View mLoginFormView;
+
+    OnButtonClickedListener mListener;
 
     SessionManager session;
 
@@ -39,92 +38,96 @@ public class LoginDialog extends Activity {
     private ArrayList<User> users;
 
 
+    public LoginDialog(){}
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.login_dialog,container,false);
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.login_dialog);
-        argentBD = new ArgentBD(getApplicationContext());
+        argentBD = new ArgentBD(getActivity());
         argentBD.open();
         users = (ArrayList<User>) argentBD.getUsers();
 
-        session = new SessionManager(getApplicationContext());
+        session = new SessionManager(getActivity());
 
-        Editlogin = (AutoCompleteTextView) findViewById(R.id.login);
-        Editpass = (EditText)findViewById(R.id.motdepasse);
+        Editlogin = (AutoCompleteTextView) v.findViewById(R.id.login);
+        Editpass = (EditText)v.findViewById(R.id.motdepasse);
         Editlogin.setText("ali@a.fr");
         Editpass.setText("seydou1");
-        final Button btnConnect = (Button) findViewById(R.id.dlconnect);
-        final Button btnAnnul = (Button) findViewById(R.id.dlannule);
-        mLoginFormView =  findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.progress1);
+        final Button btnConnect = (Button)v.findViewById(R.id.dlconnect);
+        final Button btnAnnul = (Button) v.findViewById(R.id.dlannule);
+        btnAnnul.setText("Inscrire");
+        mLoginFormView =  v.findViewById(R.id.login_form);
+        mProgressView = v.findViewById(R.id.progress1);
+
 
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mAuthTask != null) {
-                    return;
-                }
-                ;
-
-                Editlogin.setError(null);
-                Editpass.setError(null);
-
-                // Store values at the time of the login attempt.
-                String email = Editlogin.getText().toString();
-                String password = Editpass.getText().toString();
-
-                boolean cancel = false;
-                View focusView = null;
-
-                // Check for a valid password, if the user entered one.
-                if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
-                    Editpass.setError(getString(R.string.error_invalid_password));
-                    focusView = Editpass;
-                    Log.i("passError", "invalidecd");
-                    cancel = true;
-                }
-
-                // Check for a valid email address.
-                if (TextUtils.isEmpty(email)) {
-                    Editlogin.setError(getString(R.string.error_field_required));
-                    focusView = Editlogin;
-                    Log.i("LoginError", "vide");
-                    cancel = true;
-                } else if (!isEmailValid(email)) {
-                    Editlogin.setError(getString(R.string.error_invalid_email));
-                    focusView = Editlogin;
-                    Log.i("LoginError", "invalidecd");
-                    cancel = true;
-                }
-
-                if (cancel) {
-                    // There was an error; don't attempt login and focus the first
-                    // form field with an error.
-                    focusView.requestFocus();
-                } else {
-                    // Show a progress spinner, and kick off a background task to
-                    // perform the user login attempt.
-                    showProgress(true);
-                    mAuthTask = new UserLoginTask(email, password);
-                    mAuthTask.execute((Void) null);
-                }
+                checkInput();
             }
         });
 
         btnAnnul.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                finish();
+                mListener.onButtonClicked();
             }
         });
 
-
-
+        return v;
     }
 
 
+
+    private void checkInput(){
+        if (mAuthTask != null) {
+            return;
+        }
+
+        Editlogin.setError(null);
+        Editpass.setError(null);
+
+        // Store values at the time of the login attempt.
+        String email = Editlogin.getText().toString();
+        String password = Editpass.getText().toString();
+
+        boolean cancel = false;
+        View focusView = null;
+
+        // Check for a valid password, if the user entered one.
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+            Editpass.setError(getString(R.string.error_invalid_password));
+            focusView = Editpass;
+            Log.i("passError", "invalidecd");
+            cancel = true;
+        }
+
+        // Check for a valid email address.
+        if (TextUtils.isEmpty(email)) {
+            Editlogin.setError(getString(R.string.error_field_required));
+            focusView = Editlogin;
+            Log.i("LoginError", "vide");
+            cancel = true;
+        } else if (!isEmailValid(email)) {
+            Editlogin.setError(getString(R.string.error_invalid_email));
+            focusView = Editlogin;
+            Log.i("LoginError", "invalidecd");
+            cancel = true;
+        }
+
+        if (cancel) {
+            // There was an error; don't attempt login and focus the first
+            // form field with an error.
+            focusView.requestFocus();
+        } else {
+            // Show a progress spinner, and kick off a background task to
+            // perform the user login attempt.
+            showProgress(true);
+            mAuthTask = new UserLoginTask(email, password);
+            mAuthTask.execute((Void) null);
+        }
+    }
 
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
@@ -233,9 +236,9 @@ public class LoginDialog extends Activity {
 
             if (success) {
                 session.createLoginSession(mEmail,id);
-                Intent i = new Intent(getApplicationContext(),MainActivity.class);
+                Intent i = new Intent(getActivity(),MainActivity.class);
                 startActivity(i);
-                finish();
+                getActivity().finish();
             } else {
                 Editpass.setError(getString(R.string.error_incorrect_password));
                 Editpass.requestFocus();
@@ -247,5 +250,20 @@ public class LoginDialog extends Activity {
             mAuthTask = null;
             showProgress(false);
         }
+    }public interface OnButtonClickedListener{
+        public void onButtonClicked();
     }
+
+
+    @Override
+    public void onAttach(Activity activity){
+        super.onAttach(activity);
+        try{
+            mListener = (OnButtonClickedListener)activity;
+        }catch(ClassCastException e){
+            throw new ClassCastException(activity.toString()+"must implement OnButtonClickListener");
+        }
+    }
+
+
 }
