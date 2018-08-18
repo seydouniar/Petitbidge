@@ -27,6 +27,7 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.jjoe64:graphview:4.2.2'
     implementation 'com.github.jakob-grabner:Circle-Progress-View:v1.3'
+    implementation 'me.philio:pinentryview:1.0.6'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

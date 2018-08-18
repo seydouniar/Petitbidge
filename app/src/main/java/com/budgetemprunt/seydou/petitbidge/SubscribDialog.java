@@ -123,7 +123,7 @@ public class SubscribDialog extends Fragment {
             mAuthTask = new SubscribDialog.UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
             argentBD.insertUser(new User(email,password));
-            Intent intent = new Intent(getActivity().getApplicationContext(),MainActivity.class);
+            Intent intent = new Intent(getActivity().getApplicationContext(),MainLogin.class);
             startActivity(intent);
             getActivity().finish();
 
@@ -199,7 +199,7 @@ public class SubscribDialog extends Fragment {
 
             try {
                 // Simulate network access.
-                Thread.sleep(4000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 return false;
             }
@@ -227,10 +227,12 @@ public class SubscribDialog extends Fragment {
             if(isAdded()){
 
                 if (success) {
+                    session.createLoginSession(mEmail,0);
                     Intent i = new Intent(getActivity(),MainLogin.class);
                     startActivity(i);
-                    Toast.makeText(getActivity(),"Succefull",Toast.LENGTH_SHORT).show();
                     getActivity().finish();
+                    Toast.makeText(getActivity(),"Succefull",Toast.LENGTH_SHORT).show();
+
                 } else {
                     Editpass.setError(getString(R.string.error_incorrect_password));
                     Editpass.requestFocus();

@@ -26,7 +26,6 @@ public class MaBaseSQLite extends SQLiteOpenHelper {
     //historique users
     private static final String TAB_HIST = "historiques";
     private static final String ID_HIST = "ID";
-    private static final String ID_ARG = "id_argent";
     private static final String ID_USER_HIST = "id_user";
     private static final String ACTION = "action_v";
 
@@ -34,7 +33,9 @@ public class MaBaseSQLite extends SQLiteOpenHelper {
             + TAB_HIST + " ("
             + ID_HIST + " integer primary key autoincrement, "
             + ID_USER_HIST + " integer, "
-            + ID_ARG + " integer, "
+            + COL_NOM + " text not null, "
+            + COL_MONTANT + " REAL, "
+            + COL_DATE + " text not null, "
             + ACTION + " text not null );";
 
 

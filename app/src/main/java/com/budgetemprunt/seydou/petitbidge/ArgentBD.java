@@ -53,11 +53,13 @@ public class ArgentBD {
         maBaseSQLite = new MaBaseSQLite(context, NOM_BDD, null, VERSION_BDD);
     }
 
-    public long insertHist(int id,int id_arg, String action){
+    public long insertHist(Historique historique){
         ContentValues values = new ContentValues();
-        values.put(ID_USER_HIST,id);
-        values.put(ID_ARG,id_arg);
-        values.put(ACTION,action);
+        values.put(ID_USER_HIST,historique.getIdUser());
+        values.put(COL_NOM,historique.getNom());
+        values.put(COL_MONTANT,historique.getMontant());
+        values.put(COL_DATE,historique.getDate());
+        values.put(ACTION,historique.getAction());
         return bdd.insert(TAB_HIST,null,values);
     }
     public void open(){
@@ -74,15 +76,6 @@ public class ArgentBD {
         return bdd;
     }
 
-    public long insertArgent(Argent argent){
-        ContentValues values = new ContentValues();
-        values.put(COL_ID_USER,0);
-        values.put(COL_NOM, argent.getNom());
-        values.put(COL_MONTANT,argent.getMontant());
-        values.put(COL_DATE,argent.getDate());
-
-        return bdd.insert(TABLE_ARGENT,null,values);
-    }
 
     public long insertArgent(Argent argent,int id){
         ContentValues values = new ContentValues();
@@ -105,16 +98,8 @@ public class ArgentBD {
     }
 
     public List<Historique> getHistoriques(int id){
-        String rows = TABLE_ARGENT+"."+COL_NOM+","
-                + TABLE_ARGENT+"."+COL_MONTANT+","
-                + TABLE_ARGENT+"."+COL_DATE+","
-                +TAB_HIST+"."+ACTION;
-        String req = "select "+rows+" from "+ TABLE_ARGENT+ " inner join "+TAB_HIST+ " on "
-                + TABLE_ARGENT+"."+COL_ID_USER+" = "
-                +TAB_HIST+"."+ID_USER_HIST+" where "
-                + TAB_HIST+"."+ID_USER_HIST+" = "+ id
-               ;
-        Cursor c = bdd.rawQuery(req,null);
+        Cursor c = bdd.query(TAB_HIST,new String[]{ID_HIST,ID_USER_HIST,COL_NOM,COL_MONTANT,COL_DATE,ACTION},
+                ID_USER_HIST+"="+String.valueOf(id),null,null,null, null);
         return cursorToListHist(c);
     }
 
@@ -193,10 +178,12 @@ public class ArgentBD {
 
         while (!c.isAfterLast()){
             Historique a = new Historique();
-            a.setNom(c.getString(0));
-            a.setMontant(c.getDouble(1));
-            a.setDate(c.getString(2));
-            a.setAction(c.getString(3));
+            a.setIdhist(c.getInt(0));
+            a.setIdUser(c.getInt(1));
+            a.setNom(c.getString(2));
+            a.setMontant(c.getDouble(3));
+            a.setDate(c.getString(4));
+            a.setAction(c.getString(5));
             Log.i("histinbd",a.toString());
             listHists.add(a);
             c.moveToNext();

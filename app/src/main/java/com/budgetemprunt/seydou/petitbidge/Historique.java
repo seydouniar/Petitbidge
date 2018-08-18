@@ -5,6 +5,26 @@ public class Historique {
     private double montant;
     private String date;
     private String action;
+    private int idUser;
+    private int idhist;
+
+    public int getIdhist() {
+        return idhist;
+    }
+
+    public void setIdhist(int idhist) {
+        this.idhist = idhist;
+    }
+
+    public int getIdUser() {
+        return idUser;
+    }
+
+    public void setIdUser(int idUser) {
+        this.idUser = idUser;
+    }
+
+
 
     public Historique() {
     }
@@ -44,6 +64,7 @@ public class Historique {
     @Override
     public String toString() {
         return "Historique{" +
+                "userId='" +idUser+'\''+
                 "nom='" + nom + '\'' +
                 ", montant=" + montant +
                 ", date='" + date + '\'' +

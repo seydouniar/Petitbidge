@@ -25,14 +25,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 
 
-public class Pret extends Fragment implements MyDialog.CallBackDialog{
+public class Pret extends Fragment implements MyDialog.CallBackDialog,DialogPayer.OnValidePayement{
 
     ListView listView;
     ProgressBar progressLayout;
@@ -72,7 +76,6 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         HashMap<String,String> user = session.getUserDetails();
         String strId = user.get(SessionManager.KEY_ID);
 
-        Log.i("idstr",strId);
         user_id = Integer.parseInt(strId);
         argentBD = new ArgentBD(getActivity());
         argentBD.open();
@@ -139,7 +142,7 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
             case "Payer":
                 // User chose the "Favorite" action, mark the current item
                 // as a favorite...
-                Toast.makeText(getActivity(),"Payer "+argent.getNom(),Toast.LENGTH_SHORT).show();
+                payeDialog(argent);
                 return true;
 
             case "Supprimer":
@@ -186,7 +189,16 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         Argent argent= new Argent(nom,Double.parseDouble(montant),date);
         argentBD.insertArgent(argent,user_id);
         int id_arg = argentBD.getLastIdArgent();
-        argentBD.insertHist(user_id,id_arg,"pret");
+        Date currentTime = Calendar.getInstance().getTime();
+        DateFormat dateFormat= new SimpleDateFormat("dd/MM/yyyy");
+        String jour = dateFormat.format(currentTime);
+        Historique h = new Historique();
+        h.setIdUser(user_id);
+        h.setAction("prêt");
+        h.setMontant(Double.parseDouble(montant));
+        h.setDate(jour);
+        h.setNom(nom);
+        argentBD.insertHist(h);
         (new MyAsyncTask()).execute();
 
     }
@@ -194,7 +206,16 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
     @Override
     public void editValue(Argent argent,String nom,String montant,String date) {
         argentBD.updateArgent(argent.getId(),new Argent(nom,Double.parseDouble(montant),date));
-        argentBD.insertHist(user_id,argent.getId(),"Edit prêt");
+        Date currentTime = Calendar.getInstance().getTime();
+        DateFormat dateFormat= new SimpleDateFormat("dd/MM/yyyy");
+        String jour = dateFormat.format(currentTime);
+        Historique h = new Historique();
+        h.setIdUser(user_id);
+        h.setAction("Modifier");
+        h.setMontant(Double.parseDouble(montant));
+        h.setDate(jour);
+        h.setNom(nom);
+        argentBD.insertHist(h);
         (new MyAsyncTask()).execute();
     }
 
@@ -206,12 +227,43 @@ public class Pret extends Fragment implements MyDialog.CallBackDialog{
         dialog.setCancelable(false);
         dialog.show(fm,"Prêt");
     }
+    public void payeDialog(Argent argent){
+        DialogPayer dialogPayer= new DialogPayer(argent);
+        FragmentManager fm =getFragmentManager();
+        dialogPayer.setTargetFragment(Pret.this,400);
+        dialogPayer.setCancelable(false);
+        dialogPayer.show(fm,"payer");
+    }
     public void EditDiallog(Argent argent){
         MyDialog dialog = new MyDialog(argent,true);
         FragmentManager fm = getFragmentManager();
         dialog.setTargetFragment(Pret.this,300);
         dialog.setCancelable(false);
         dialog.show(fm,"Prêt");
+    }
+
+    @Override
+    public void onValid(Argent argent,String nom , String montant,String montantOld) {
+        Date currentTime = Calendar.getInstance().getTime();
+        DateFormat dateFormat= new SimpleDateFormat("dd/MM/yyyy");
+        String jour = dateFormat.format(currentTime);
+        Historique h = new Historique();
+        h.setIdUser(user_id);
+        h.setAction("Payé");
+        h.setMontant(Double.parseDouble(montant));
+        h.setDate(jour);
+        h.setNom(nom);
+        double oldm = Double.parseDouble(montantOld);
+        double newm = Double.parseDouble(montant);
+        if(oldm>0){
+            argentBD.updateArgent(argent.getId(),new Argent(nom,oldm,jour));
+            argentBD.insertHist(h);
+        }else {
+            argentBD.insertHist(h);
+            argentBD.deleteArgent(argent.getId());
+        }
+
+        (new MyAsyncTask()).execute();
     }
 
 

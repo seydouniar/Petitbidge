@@ -9,18 +9,22 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 
 import java.util.ArrayList;
 
-public class LoginDialog extends Fragment {
+public class LoginDialog extends Fragment implements MyKeyboard.KeyValue{
 
     private UserLoginTask mAuthTask = null;
     private View mProgressView;
@@ -36,6 +40,7 @@ public class LoginDialog extends Fragment {
     private  EditText Editpass;
     private ArgentBD argentBD;
     private ArrayList<User> users;
+    String pass1;
 
 
     public LoginDialog(){}
@@ -60,6 +65,17 @@ public class LoginDialog extends Fragment {
         mLoginFormView =  v.findViewById(R.id.login_form);
         mProgressView = v.findViewById(R.id.progress1);
 
+        Editpass.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyKeyboard myKeyboard = new MyKeyboard();
+                FragmentManager fm = getFragmentManager();
+                myKeyboard.setTargetFragment(LoginDialog.this,300);
+                myKeyboard.setCancelable(true);
+
+                myKeyboard.show(fm,"Prêt");
+            }
+        });
 
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,7 +190,33 @@ public class LoginDialog extends Fragment {
         return password.length() > 4;
     }
 
+    @Override
+    public void SendKeyValue(String keyValue) {
+        if(pass1!=null)
+        {
+            if(keyValue.equals("x")){
+                pass1=null;
+                Editpass.setText(null);
+            }else if(keyValue.equals("C")&&pass1.length()!=0){
+                pass1 = pass1.substring(0,pass1.length()-1);
+            }else {
+                pass1 +=keyValue;
+            }
+        }
 
+        else {
+            if(keyValue.equals("x")){
+                pass1=null;
+            }else if(keyValue.equals("C")){
+                pass1=null;
+            }
+            else {
+                pass1 = keyValue;
+            }
+        }
+
+        Editpass.setText(pass1);
+    }
 
 
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
